@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Subnetting paso a paso</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6fa;--card:#fff;--ink:#14213d;--mut:#5b6b85;--teal:#0a8a8f;--hl:#ffe45c;--hlink:#14213d;--bad:#c0392b;--ok:#1e8e4e;--line:#d5deea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1726;--card:#18233a;--ink:#e8eef9;--mut:#9aabc7;--teal:#3cc4c9;--hl:#6b5d10;--hlink:#fff3a8;--bad:#ff8a7a;--ok:#5fd38d;--line:#2c3b57}}
+:root[data-theme="dark"]{--bg:#0f1726;--card:#18233a;--ink:#e8eef9;--mut:#9aabc7;--teal:#3cc4c9;--hl:#6b5d10;--hlink:#fff3a8;--bad:#ff8a7a;--ok:#5fd38d;--line:#2c3b57}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem;margin:0 0 4px;color:var(--teal)}
+h2{font-size:1.1rem;margin:0 0 8px}
+.sub{color:var(--mut);margin:0 0 16px}
+.enun{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--teal);padding:14px 16px;border-radius:6px;margin-bottom:14px}
+.enun b{font-family:"IBM Plex Mono",monospace}
+.prog{display:flex;gap:6px;margin-bottom:14px}
+.prog span{flex:1;height:8px;border-radius:4px;background:var(--line)}
+.prog .on{background:var(--teal)}.prog .perfect{background:var(--ok)}.prog .help{background:#e0a800}.prog .rev{background:var(--bad)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px;margin-bottom:14px}
+.theory{margin:0 0 12px;color:var(--mut)}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+label{display:flex;flex-direction:column;font-size:.85rem;color:var(--mut);gap:3px;flex:1 1 180px}
+input{font:1rem "IBM Plex Mono",monospace;padding:9px 10px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:3px solid var(--teal);outline-offset:1px}
+button{font:600 1rem "IBM Plex Sans",sans-serif;padding:10px 18px;border:0;border-radius:4px;background:var(--teal);color:#fff;cursor:pointer}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button{color:#0f1726}}
+button.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.hints{margin:12px 0 0;padding:0;list-style:none}
+.hints li{background:var(--bg);border-left:4px solid #e0a800;padding:8px 12px;margin-bottom:8px;border-radius:0 4px 4px 0}
+.msg{margin:8px 0 0;font-weight:600}.msg.bad{color:var(--bad)}.msg.ok{color:var(--ok)}
+.sol{background:var(--bg);border-radius:4px;padding:10px 12px;margin-top:10px}
+.strip{font-family:"IBM Plex Mono",monospace;overflow-x:auto;white-space:nowrap;padding:6px 0;font-size:1.05rem}
+.strip .o{display:inline-block;margin-right:.7ch}
+.r{border-bottom:3px solid var(--teal)}
+.h{background:var(--hl);color:var(--hlink)}
+.leg{font-size:.85rem;color:var(--mut)}
+.done{border-left:5px solid var(--ok)}
+code{font-family:"IBM Plex Mono",monospace}
+.hero{background:#14213d;color:#fff;border-radius:10px;padding:18px 18px 14px;margin-bottom:16px;border-bottom:6px solid #ffe45c}
+.hero h1{color:#fff;font-size:1.7rem}.hero .sub{color:#c5d3ea;margin-bottom:10px}
+.bits{font:600 clamp(.95rem,4.2vw,1.6rem) "IBM Plex Mono",monospace;color:#5fd6da;margin-bottom:6px;overflow:hidden;white-space:nowrap}
+.bits b{background:#ffe45c;color:#14213d;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+#lvb{display:flex;gap:10px;align-items:center;flex-wrap:wrap;min-height:34px}
+.badge{background:#ffe45c;color:#14213d;font-weight:600;padding:4px 12px;border-radius:99px}
+:root button.sec{color:var(--ink)}
+:root #lvb button.sec{color:#fff;border-color:#5b6b85;padding:6px 12px;font-size:.9rem}
+.pick{font-size:1.3rem}
+.lv{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-bottom:12px}
+:root button.lvc{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--line);border-top:10px solid;padding:16px;font-weight:400;transition:transform .15s}
+.lvc:hover{transform:translateY(-4px)}.lvc b{font-size:1.3rem}.lvc .em{font-size:2rem}
+:root button.lvc.g{border-top-color:#2ea66b}:root button.lvc.y{border-top-color:#e0a800}:root button.lvc.r{border-top-color:#d9473a}
+.blk{display:flex;gap:4px;margin-bottom:14px;font:600 .8rem "IBM Plex Mono",monospace}
+.sg{padding:8px 10px;border-radius:4px;color:#14213d;min-width:0;overflow-wrap:anywhere}
+.sg small{display:block;font:600 .75rem "IBM Plex Sans",sans-serif}
+.sg.a{background:#5fd6da;flex:1}.sg.b{background:#ffe45c;flex:3}.sg.c{background:#ff9a8c;flex:1}
+.sg.lk{background:var(--line);color:var(--mut)}
+.pow{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}.pow span{border:1px solid var(--line);border-radius:4px;padding:4px 8px;font-family:"IBM Plex Mono",monospace;text-align:center}.pow b{display:block;font-size:.75rem;color:var(--mut)}
+.pop{animation:pop .5s}@keyframes pop{40%{transform:scale(1.03);border-color:var(--ok)}}
+.stars{font-size:2rem}
+button:disabled{opacity:.5;cursor:default}
+.bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--line)}.bar i{display:block}.sk{margin-bottom:10px}
+.hb{display:flex;align-items:flex-end;gap:4px;height:80px;margin:8px 0}.hb i{flex:1;background:var(--teal);border-radius:3px 3px 0 0;min-height:2px}
+.bd{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:4px 12px;margin:0 6px 6px 0}
+textarea{width:100%;min-height:150px;font:.9rem "IBM Plex Mono",monospace;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px}
+#cres ul{list-style:none;padding:0;margin:12px 0}#cres li{padding:8px 12px;margin-bottom:8px;border-left:4px solid;border-radius:0 4px 4px 0;background:var(--bg)}
+.cok{border-color:var(--ok)}.cbad{border-color:var(--bad)}
+.chk{flex-direction:row;align-items:center;gap:8px;flex:none;margin:6px 0 12px}.chk input{width:auto}
+.vt{border-collapse:collapse;font-size:.85rem;width:100%}.vt th,.vt td{border:1px solid var(--line);padding:6px 8px;text-align:left;font-family:"IBM Plex Mono",monospace;vertical-align:top}.vt th{background:var(--bg);font-family:"IBM Plex Sans",sans-serif}
+.vb{display:flex;gap:2px;margin:10px 0;min-height:56px;overflow-x:auto}.vb div{color:#14213d;font:600 .7rem "IBM Plex Mono",monospace;padding:4px;border-radius:3px;overflow-wrap:anywhere}
+footer{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-size:.85rem;color:var(--mut)}footer a{color:var(--teal)}
+:root button.lvc.c{border-top-color:#0a8a8f}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<div class="hero"><div class="bits" aria-hidden="true">11000000.10101000.00000001.1<b>0000000</b></div><h1>Subnetting y supernetting paso a paso</h1><p class="sub">Resuelve cada paso. Si fallas, recibes hasta tres pistas antes de ver la solución.</p><div id="lvb"></div></div>
+<div id="app"></div>
+<footer>© 2026 <b>Javier Plaza López</b>. Esta obra está bajo una licencia <a href="https://creativecommons.org/licenses/by-nd/4.0/deed.es" target="_blank" rel="noopener license">Creative Commons Atribución-SinObraDerivada 4.0 Internacional (CC BY-ND 4.0)</a>. Puedes copiarla y compartirla en cualquier medio siempre que reconozcas su autoría y no la modifiques.<br>Contenido de supernetting y VLSM basado en los materiales de clase «Supernetting» (José María Morales Vázquez) y «UT 03.03 - VLSM», que mantienen su propia autoría.</footer>
+</main>
+<script>
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const fromI=i=>[i>>>24,(i>>>16)&255,(i>>>8)&255,i&255];
+const toI=a=>((a[0]<<24)|(a[1]<<16)|(a[2]<<8)|a[3])>>>0;
+const ipS=a=>a.join('.');
+const b8=x=>x.toString(2).padStart(8,'0');
+const bin=a=>a.map(b8).join('.');
+const pIP=s=>{s=(s||'').trim();if(!/^\d{1,3}(\.\d{1,3}){3}$/.test(s))return null;const a=s.split('.').map(Number);return a.some(x=>x>255)?null:a};
+const pN=s=>{s=(s||'').trim().replace(/^\//,'');return /^\d+$/.test(s)?+s:null};
+const eqIP=(s,a)=>{const x=pIP(s);return !!x&&ipS(x)===ipS(a)};
+function strip(a,p){let h='';for(let o=0;o<4;o++){h+='<span class="o">';for(let b=0;b<8;b++){const i=o*8+b;h+=`<span class="${i<p?'r':'h'}">${(a[o]>>(7-b))&1}</span>`}h+='</span>'}return `<div class="strip">${h}</div>`}
+const LEG='<div class="leg"><span class="r">subrayado</span> = bits de red · <span class="h">resaltado</span> = bits de host</div>';
+let E,S,ST;
+function newEx(L){
+  const n=L===1?rnd(3,6):L===2?rnd(3,10):rnd(6,16),h=rnd(2**(n-1)-1,2**n-2),p=32-n;
+  const mi=(0xFFFFFFFF<<n)>>>0;
+  const c=((192<<24)|(168<<16)|rnd(0,65535))>>>0;
+  const base=L===3?[c,((10<<24)|rnd(0,16777215))>>>0,((172<<24)|((16+rnd(0,15))<<16)|rnd(0,65535))>>>0][rnd(0,2)]:c;
+  const net=(base&mi)>>>0;
+  const bc=(net|(~mi>>>0))>>>0;
+  E={L,n,h,p,k:Math.min(3,Math.floor(p/8)),net:fromI(net),mask:fromI(mi),bc:fromI(bc),first:fromI(net+1),last:fromI(bc-1),ip:fromI(net+rnd(1,2**n-2))};
+  ST=L===3?[steps[0],steps[1],netStep,steps[2],steps[3]]:steps;
+  S={i:0,tries:ST.map(()=>0),hints:ST.map(()=>[]),res:[],vals:ST.map(()=>({})),msg:''};
+}
+const steps=[
+ {k:'n',t:'Calcular n (bits de host)',
+  th:()=>'Busca el menor n tal que 2<sup>n</sup> − 2 ≥ nº de hosts. Se restan 2 porque la primera dirección es la de red y la última la de broadcast.',
+  f:[{id:'n',l:'n (bits de host)',ph:'ej. 5'}],
+  ok:v=>pN(v.n)===E.n,
+  hs:[()=>`Necesitas 2<sup>n</sup> − 2 ≥ ${E.h}. Recuerda restar las direcciones de red y de broadcast.`,
+   v=>{const n=pN(v.n);return n===null?`Prueba un valor de n y calcula 2<sup>n</sup> − 2: tiene que ser ≥ ${E.h}, sin pasarte de bits.`:n<E.n?`Con n = ${n} solo tienes 2<sup>${n}</sup> − 2 = ${2**n-2} hosts: no llegas a ${E.h}. Necesitas más bits.`:`Con n = ${n} llegas (${2**n-2} hosts), pero desperdicias direcciones. Busca el n más pequeño que sirva.`},
+   ()=>`El resultado está entre ${E.n-1} y ${E.n+1}. Calcula 2<sup>n</sup> − 2 para cada uno y quédate con el primero que llega a ${E.h}.`],
+  ans:()=>`n = ${E.n}`,
+  ex:()=>`2<sup>${E.n}</sup> − 2 = ${2**E.n-2} ≥ ${E.h}, y con n = ${E.n-1} serían solo ${2**(E.n-1)-2} &lt; ${E.h}.`},
+ {k:'mask',t:'Crear la máscara de red',
+  th:()=>`Pon a 0 los n = ${E.n} bits de host (de derecha a izquierda) y a 1 el resto, que son los bits de red. El prefijo /x es el número de unos.`,
+  f:[{id:'p',l:'Prefijo',ph:'/24'},{id:'m',l:'Máscara en decimal',ph:'255.255.255.0'}],
+  ok:v=>pN(v.p)===E.p&&eqIP(v.m,E.mask),
+  hs:[()=>`La máscara tiene ${E.n} ceros al final y el resto unos. El prefijo es 32 − ${E.n}.`,
+   ()=>`Tu máscara debe tener ${E.p} unos seguidos de ${E.n} ceros. Los octetos de todo unos valen 255 y los de todo ceros valen 0.`,
+   ()=>`En binario es ${bin(E.mask)}. El octeto ${E.k+1} es ${b8(E.mask[E.k])}: súmale los pesos 128, 64, 32… a cada 1 para pasarlo a decimal.`],
+  ans:()=>`/${E.p} = ${ipS(E.mask)}`,
+  ex:()=>`${strip(E.mask,E.p)}Binario ${bin(E.mask)} = ${ipS(E.mask)} = /${E.p}.`},
+ {k:'bc',t:'Calcular la dirección de broadcast',
+  th:()=>`La red es <code>${ipS(E.net)}</code>. Deja intactos los bits de red y pon a 1 todos los bits de host.`,
+  f:[{id:'b',l:'Dirección de broadcast',ph:'192.168.1.127'}],
+  ok:v=>eqIP(v.b,E.bc),
+  hs:[()=>`Los bits de red no se tocan y los n = ${E.n} bits de host se ponen todos a 1.`,
+   ()=>`La red en binario es ${bin(E.net)}. Mantén los primeros ${E.p} bits y cambia los últimos ${E.n} a 1.`,
+   ()=>`Atajo: broadcast = red + (2<sup>${E.n}</sup> − 1) = red + ${2**E.n-1} direcciones. Suma desde el octeto de la derecha, con acarreo si pasas de 255.`],
+  ans:()=>ipS(E.bc),
+  ex:()=>`Red: ${strip(E.net,E.p)}Broadcast: ${strip(E.bc,E.p)}${LEG}= ${ipS(E.bc)}`},
+ {k:'range',t:'Calcular el rango de hosts',
+  th:()=>`Los hosts son todas las direcciones entre la de red (<code>${ipS(E.net)}</code>) y la de broadcast (<code>${ipS(E.bc)}</code>), sin incluirlas.`,
+  f:[{id:'f',l:'Primer host',ph:'192.168.1.1'},{id:'l',l:'Último host',ph:'192.168.1.126'}],
+  ok:v=>eqIP(v.f,E.first)&&eqIP(v.l,E.last),
+  hs:[()=>'La dirección de red y la de broadcast no se pueden asignar a equipos, así que quedan fuera del rango.',
+   ()=>`Primer host = dirección de red + 1 = ${ipS(E.net)} + 1.`,
+   ()=>`Último host = broadcast − 1 = ${ipS(E.bc)} − 1. Entre ambos hay ${2**E.n-2} hosts, justo lo que pide el enunciado (≥ ${E.h}).`],
+  ans:()=>`${ipS(E.first)} – ${ipS(E.last)}`,
+  ex:()=>`Del ${ipS(E.first)} (red + 1) al ${ipS(E.last)} (broadcast − 1): ${2**E.n-2} hosts útiles.`}
+];
+const netStep={k:'net',t:'Calcular la dirección de red',
+ th:()=>`Te dan el equipo <code>${ipS(E.ip)}</code>. La dirección de red sale de un AND bit a bit entre la IP y la máscara <code>${ipS(E.mask)}</code>: los bits de host pasan a 0.`,
+ f:[{id:'r',l:'Dirección de red',ph:'10.0.0.0'}],
+ ok:v=>eqIP(v.r,E.net),
+ hs:[()=>'En el AND, 1 AND x = x y 0 AND x = 0. Donde la máscara tiene ceros, el resultado es 0.',
+  ()=>`Los octetos con máscara 255 se copian tal cual. Fíjate en el octeto ${E.k+1}: IP = ${b8(E.ip[E.k])}, máscara = ${b8(E.mask[E.k])}.`,
+  ()=>`Pon a 0 los últimos ${E.n} bits de ${bin(E.ip)}. Los octetos con máscara 0 valen 0.`],
+ ans:()=>ipS(E.net),
+ ex:()=>`IP: ${strip(E.ip,E.p)}Red: ${strip(E.net,E.p)}${LEG}= ${ipS(E.net)}`};
+function menu(){if(SEC==='sub')menuSub();else if(SEC==='sup')menuSup();else if(SEC==='vlsm')menuVlsm();else{home();return}
+ document.getElementById('app').insertAdjacentHTML('afterbegin','<button class="sec" id="bk" style="margin-bottom:10px">← Cambiar de sección</button>');document.getElementById('bk').onclick=()=>{SEC=null;render()}}
+function home(){
+ document.getElementById('app').innerHTML='<h2 class="pick">¿Qué quieres practicar?</h2><div class="lv"><button class="lvc g" data-s="sub"><span class="em">✂️</span><b>Subnetting</b><span>Dividir una red en subredes más pequeñas.</span></button><button class="lvc y" data-s="sup"><span class="em">🔗</span><b>Supernetting</b><span>Unir varias redes consecutivas en una sola más grande.</span></button><button class="lvc r" data-s="vlsm"><span class="em">🧩</span><b>VLSM</b><span>Repartir una red en subredes de tamaño distinto, sin desperdiciar direcciones.</span></button></div>';
+ document.querySelectorAll('.lvc').forEach(b=>b.onclick=()=>{SEC=b.dataset.s;render()});
+}
+function menuSup(){
+ const L=[[1,'🌱','Fácil','Une 2 redes /24 consecutivas, como 192.168.10.0 y 192.168.11.0.','g'],[2,'🔧','Medio','Hasta 8 redes /24. A veces no se pueden unir: tú decides.','y'],[3,'🔥','Difícil','Redes 10.x y 172.16.x de distintos tamaños, hasta 16 redes y casos que no se pueden unir.','r'],['sc','✅','Corrector','Escribe las redes y tus respuestas y te las corrijo.','c'],['se','📝','Examen','10 preguntas adaptativas de supernetting con nota y nivel.','c'],['sa','🎲','Aleatorio','Preguntas de supernetting mezcladas.','c'],['s','📊','Mi progreso','Tu evolución en subnetting y supernetting.','c']];
+ document.getElementById('app').innerHTML='<h2 class="pick">Supernetting: elige un nivel</h2><div class="lv">'+L.map(l=>`<button class="lvc ${l[4]}" data-l="${l[0]}"><span class="em">${l[1]}</span><b>${l[2]}</b><span>${l[3]}</span></button>`).join('')+'</div>'+(D.lv2?`<p>Tu nivel recomendado: <b>${LV[D.lv2]}</b></p>`:'');
+ document.querySelectorAll('.lvc').forEach(b=>b.onclick=()=>{const l=b.dataset.l;if(/^[123]$/.test(l)){CM=false;newSup(+l);render();return}MODE=l;CM=true;render()});
+}
+function menuSub(){
+ const L=[[1,'🌱','Fácil','Hasta 62 hosts, redes 192.168.x.x y una tabla de potencias de 2 como ayuda.','g'],[2,'🔧','Medio','Hasta 1022 hosts y sin tabla de ayuda.','y'],[3,'🔥','Difícil','Hasta 65 534 hosts, redes 10.x, 172.16.x y 192.168.x. Te dan la IP de un equipo y tú calculas también la dirección de red.','r'],[0,'✅','Corrector','Escribe un ejercicio y tus respuestas: te digo qué está bien, qué falla y por qué.','c'],['e','📝','Examen','10 preguntas adaptativas sin pistas: te da una nota de 0 a 10 y te recomienda tu nivel.','c'],['a','🎲','Aleatorio','Preguntas de todos los tipos mezcladas, al nivel que ya tienes.','c'],['s','📊','Mi progreso','Qué se te da mejor y peor, tu evolución, insignias e informe.','c']];
+ document.getElementById('app').innerHTML='<h2 class="pick">Elige un nivel o corrige tu propio ejercicio</h2><div class="lv">'+L.map(l=>`<button class="lvc ${l[4]}" data-l="${l[0]}"><span class="em">${l[1]}</span><b>${l[2]}</b><span>${l[3]}</span></button>`).join('')+'</div><p class="leg">Puedes cambiar de nivel cuando quieras.</p>'+(D.level?'<p>Tu nivel recomendado: <b>'+['','Fácil','Medio','Difícil'][D.level]+'</b></p>':'');
+ document.querySelectorAll('.lvc').forEach(b=>b.onclick=()=>{const l=b.dataset.l;if(/^[123]$/.test(l)){CM=false;newEx(+l);render();return}MODE=l;CM=true;render()});
+}
+function bar(){
+ const d=k=>ST.some((s,i)=>s.k===k&&S.res[i]);
+ const no=E.L<3||d('net');
+ return `<div class="blk"><div class="sg a ${no?'':'lk'}"><small>Red</small>${no?ipS(E.net):'?'}</div><div class="sg b ${d('range')?'':'lk'}"><small>Hosts${d('n')?' ('+(2**E.n-2)+' útiles)':''}</small>${d('range')?ipS(E.first)+' – '+ipS(E.last):'?'}</div><div class="sg c ${d('bc')?'':'lk'}"><small>Broadcast</small>${d('bc')?ipS(E.bc):'?'}</div></div>`;
+}
+const pow=()=>'<div class="pow">'+[1,2,3,4,5,6,7,8].map(x=>`<span><b>2<sup>${x}</sup></b>${2**x}</span>`).join('')+'</div>';
+function render(){
+  const lb=document.getElementById('lvb');
+  if(!E){const B={0:'✅ Corrector',e:'📝 Examen',a:'🎲 Aleatorio',s:'📊 Mi progreso',w:'🎯 Punto débil',sc:'✅ Corrector supernetting',se:'📝 Examen supernetting',sa:'🎲 Aleatorio supernetting',ve:'📝 Examen VLSM',va:'🎲 Aleatorio VLSM',v:'🧩 VLSM',u:'🛠️ Corrector VLSM'};lb.innerHTML=CM?`<span class="badge">${B[MODE]}</span><button class="sec" id="chl">Volver al menú</button>`:'';if(CM){document.getElementById('chl').onclick=()=>{CM=false;clearInterval(TM);render()};special()}else menu();return}
+  const a=document.getElementById('app');let h='';
+  lb.innerHTML=`<span class="badge">${['','🌱 Fácil','🔧 Medio','🔥 Difícil'][E.L]}</span><button class="sec" id="chl">Cambiar nivel</button>`;
+  document.getElementById('chl').onclick=()=>{E=null;render()};
+  h+=E.T==='sup'?supEnun():E.T==='vlsm'?vlEnun():E.L===3?`<div class="enun">Un equipo tiene la IP <b>${ipS(E.ip)}</b>. Su subred debe direccionar <b>${E.h}</b> equipos.</div>`:`<div class="enun">Red <b>${ipS(E.net)}</b>. Necesitas direccionar <b>${E.h}</b> equipos.</div>`;
+  h+='<div class="prog">'+ST.map((s,i)=>`<span class="${S.res[i]||(i===S.i?'on':'')}" title="Paso ${i+1}"></span>`).join('')+'</div>'+(E.T==='sup'||E.T==='vlsm'?'':bar());
+  for(let i=0;i<=Math.min(S.i,ST.length-1);i++){
+    const s=ST[i],done=S.res[i];
+    h+=`<section class="card ${done?'done':''} ${done&&i===S.i?'pop':''}"><h2>Paso ${i+1}: ${s.t}</h2><p class="theory">${s.th()}</p>${E.L===1&&s.k==='n'&&!done?pow():''}`;
+    if(done){
+      h+=`<div class="sol"><b>${{perfect:'⭐ Correcto',help:'👍 Correcto con ayuda',rev:'💡 Solución'}[done]}: ${s.ans()}</b><br>${s.ex()}</div>`;
+    }else{
+      h+='<div class="row">'+s.f.map(f=>`<label>${f.l}<input id="in-${f.id}" autocomplete="off" inputmode="text" placeholder="${f.ph}" value="${S.vals[i][f.id]||''}"></label>`).join('')+'</div>';
+      h+=`<button id="chk">Comprobar</button> <button class="sec" id="hnt" ${S.hints[i].length>=3?'disabled':''}>💡 Pedir pista</button> <span class="leg">Pistas usadas: ${S.hints[i].length} de 3</span>`;
+      if(S.msg)h+=`<p class="msg bad">${S.msg}</p>`;
+    }
+    if(S.hints[i].length)h+='<ul class="hints">'+S.hints[i].map((t,j)=>`<li><b>Pista ${j+1}:</b> ${t}</li>`).join('')+'</ul>';
+    h+='</section>';
+  }
+  if(S.res.length===ST.length){
+    const g=S.res.filter(r=>r==='perfect').length,hp=S.res.filter(r=>r==='help').length,rv=S.res.filter(r=>r==='rev').length;
+    h+=`<section class="card"><h2>🏁 Ejercicio completado</h2><div class="stars">${'⭐'.repeat(g)}${'👍'.repeat(hp)}${'💡'.repeat(rv)}</div><p>Sin ayuda: <b>${g}</b> · Con pistas: <b>${hp}</b> · Solución revelada: <b>${rv}</b></p><button id="next">Nuevo ejercicio</button> <button class="sec" id="chl2">Cambiar nivel</button></section>`;
+  }else if(S.res[S.i]){
+    h+='<button id="adv">Siguiente paso</button>';
+  }
+  a.innerHTML=h;
+  const c=document.getElementById('chk');
+  if(c){c.onclick=check;document.getElementById('hnt').onclick=hint;a.querySelectorAll('input').forEach(x=>x.onkeydown=e=>{if(e.key==='Enter')check()});a.querySelector('input').focus({preventScroll:true})}
+  const ad=document.getElementById('adv');if(ad)ad.onclick=()=>{S.i++;S.msg='';render()};
+  const nx=document.getElementById('next');if(nx){nx.onclick=()=>{(E.T==='sup'?newSup:E.T==='vlsm'?newVl:newEx)(E.L);render()};document.getElementById('chl2').onclick=()=>{E=null;render()}}
+}
+let CM=false;
+function hint(){const i=S.i,s=ST[i],v={};s.f.forEach(f=>v[f.id]=document.getElementById('in-'+f.id).value);S.vals[i]=v;if(S.hints[i].length<3)S.hints[i].push(s.hs[S.hints[i].length](v));S.msg='';render()}
+const CF=[['n','n (bits de host)'],['p','Prefijo'],['m','Máscara'],['r','Dirección de red'],['b','Broadcast'],['f','Primer host'],['l','Último host']];
+function corrector(X){
+ document.getElementById('app').innerHTML=`<section class="card"><h2>Corrector de ejercicios</h2><p class="theory">Escribe el enunciado y tus respuestas. Deja en blanco lo que no hayas hecho: te diré qué está bien, qué falla y por qué.</p><div class="row"><label>IP o red del enunciado<input id="c-ip" placeholder="192.168.1.0" ${X?`value="${X.ip}" readonly`:''}></label><label>Equipos a direccionar<input id="c-h" inputmode="numeric" placeholder="68" ${X?`value="${X.h}" readonly`:''}></label></div><label class="chk"><input type="checkbox" id="c-inc"> El número de equipos ya incluye la dirección de red y la de broadcast</label><h2>Tus respuestas</h2><div class="row">${CF.map(f=>`<label>${f[1]}<input id="c-${f[0]}" autocomplete="off"></label>`).join('')}</div><button id="cc">${X?'Entregar examen':'Corregir'}</button>${X?' <b id="tm">0:00</b>':''}<div id="cres"></div></section>`;
+ document.getElementById('cc').onclick=()=>{const r=correct();if(X&&r&&!X.done){X.done=1;clearInterval(TM);const nota=(r[0]/7*10).toFixed(1);hist('Examen',+nota);document.getElementById('cres').insertAdjacentHTML('afterbegin',`<h2>Nota: ${nota} / 10</h2>`);document.getElementById('cc').disabled=true}};
+ if(X){const t0=Date.now();clearInterval(TM);TM=setInterval(()=>{const e=document.getElementById('tm');if(!e){clearInterval(TM);return}const s=Math.floor((Date.now()-t0)/1000);e.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')},1000)}
+}
+function correct(){
+ const g=id=>document.getElementById('c-'+id).value.trim(),out=document.getElementById('cres');
+ const ip=pIP(g('ip')),h=pN(g('h'));
+ if(!ip||!h||h<1||h>2**30-2){out.innerHTML='<p class="msg bad">Escribe una IP válida (ej. 192.168.1.0) y un número de equipos entre 1 y 1 073 741 822.</p>';return}
+ const inc=!!document.getElementById('c-inc')&&document.getElementById('c-inc').checked,need=inc?h:h+2,hu=need-2;let n=2;while(2**n<need)n++;const KEY=CF.map(f=>g(f[0])).join('|')+g('ip')+g('h')+inc,REC1=KEY!==LK;LK=KEY;
+ const p=32-n,mi=(0xFFFFFFFF<<n)>>>0,net=(toI(ip)&mi)>>>0,bc=(net|(~mi>>>0))>>>0;
+ const C={mask:fromI(mi),net:fromI(net),bc:fromI(bc),first:fromI(net+1),last:fromI(bc-1)};
+ const un=pN(g('n')),up=pN(g('p')),um=pIP(g('m')),mk=x=>x===0?0:(0xFFFFFFFF<<(32-x))>>>0;
+ const rows=[],cnt=[0,0];
+ const SKM={'n':'n','Prefijo':'mask','Máscara':'mask','Dirección de red':'net','Broadcast':'bc','Primer host':'range','Último host':'range'};
+ const add=(l,u,ok,cor,why)=>{if(u==='')return;cnt[ok?0:1]++;if(REC1)rec(SKM[l],ok?'perfect':'rev');if(!ok){const e=/arrastras/.test(why)?'Arrastrar un error de un paso anterior':/primera direcci/.test(why)?'Usar la dirección de red como primer host':/ltima direcci/.test(why)?'Usar el broadcast como último host':'';if(e)recE(e)}rows.push(`<li class="${ok?'cok':'cbad'}"><b>${ok?'✅':'❌'} ${l}:</b> tu respuesta <code>${u}</code>${ok?'':` · correcto: <code>${cor}</code><br><span class="leg">${why}</span>`}</li>`)};
+ add('n',g('n'),un===n,n,un===null?'Debe ser un número entero.':un<n?`Con n = ${un} solo hay 2<sup>${un}</sup> − 2 = ${2**un-2} hosts y necesitas ${hu}.`:`Con n = ${un} llegas, pero no es el mínimo: con n = ${n} ya hay ${2**n-2} hosts (≥ ${hu}) y con ${n-1} solo ${2**(n-1)-2}.`);
+ add('Prefijo',g('p'),up===p,'/'+p,un!==null&&un!==n&&up===32-un?'Es coherente con tu n, pero arrastras el error del paso 1.':`Prefijo = 32 − n = 32 − ${n} = ${p}.`);
+ add('Máscara',g('m'),!!um&&ipS(um)===ipS(C.mask),ipS(C.mask),um&&up!==null&&up<=32&&toI(um)===mk(up)&&up!==p?'Coincide con tu prefijo, así que el fallo viene de antes.':`Debe tener ${p} unos y ${n} ceros: ${bin(C.mask)}.`);
+ add('Dirección de red',g('r'),eqIP(g('r'),C.net),ipS(C.net),`AND de la IP con la máscara /${p}: los ${n} bits de host pasan a 0.`);
+ add('Broadcast',g('b'),eqIP(g('b'),C.bc),ipS(C.bc),`Mantén los bits de red y pon a 1 los últimos ${n} bits (red + ${2**n-1}).`);
+ add('Primer host',g('f'),eqIP(g('f'),C.first),ipS(C.first),eqIP(g('f'),C.net)?'La primera dirección es la de red y no se asigna a ningún equipo: el primer host es red + 1.':'Primer host = dirección de red + 1.');
+ add('Último host',g('l'),eqIP(g('l'),C.last),ipS(C.last),eqIP(g('l'),C.bc)?'La última dirección es la de broadcast y no se asigna: el último host es broadcast − 1.':'Último host = broadcast − 1.');
+ const tot=cnt[0]+cnt[1];
+ out.innerHTML=(tot?`<h2>Resultado: ${cnt[0]} de ${tot} correctas</h2><ul>${rows.join('')}</ul>`:'<p class="msg bad">No has rellenado ninguna respuesta.</p>')+`<div class="sol"><b>Solución completa</b><br>${inc?`${h} direcciones (ya incluyen red y broadcast)`:`${h} equipos + 2 (red y broadcast) = ${need} direcciones`} → 2<sup>${n}</sup> = ${2**n} ≥ ${need}<br>n = ${n} · /${p} · máscara ${ipS(C.mask)}${strip(C.mask,p)}${strip(C.net,p)}${strip(C.bc,p)}${LEG}Red ${ipS(C.net)} · Broadcast ${ipS(C.bc)} · Hosts ${ipS(C.first)} – ${ipS(C.last)} (${2**n-2} útiles)</div>`;
+ return cnt;
+}
+const SKN={bin:'Binario',n:'n y hosts',mask:'Máscara',net:'Dirección de red',bc:'Broadcast',range:'Rango de hosts',sj:'Unir redes (condiciones)',sm:'Supermáscara',sn:'Red y broadcast del supernet',sh:'Hosts del supernet',vm:'VLSM: reparto',vl:'VLSM: direcciones libres'};
+const VSK=['vm','vl'];
+const SUP=['sj','sm','sn','sh'];
+const LV=['','🌱 Fácil','🔧 Medio','🔥 Difícil'];
+let MODE='0',QS,TM,SEC=null;
+let D=(()=>{try{return JSON.parse(localStorage.getItem('subnet-stats'))||{}}catch(e){return {}}})();
+const fixD=()=>{D.sk=D.sk||{};D.hist=D.hist||[];D.err=D.err||{};D.days=D.days||[]};fixD();
+const save=()=>{try{localStorage.setItem('subnet-stats',JSON.stringify(D))}catch(e){}};
+const today=()=>new Date().toISOString().slice(0,10);
+function rec(k,r){if(!SKN[k])return;const s=D.sk[k]=D.sk[k]||{perfect:0,help:0,rev:0};s[r]++;if(!D.days.includes(today()))D.days.push(today());save()}
+function recE(e){D.err[e]=(D.err[e]||0)+1;save()}
+function hist(m,s){D.hist.push({d:today(),m,s});D.hist=D.hist.slice(-30);save()}
+function special(){const m=MODE;if(m==='0')corrector();else if(m==='s')stats();else if(m==='sc')scorr();else if(m==='ve')qstart('e','vlsm');else if(m==='va')qstart('a','vlsm');else if(m==='v'||m==='u')vform(m);else if(m==='se')qstart('e','sup');else if(m==='sa')qstart('a','sup');else qstart(m)}
+function qgen(d,sk){
+ const T=sk||Object.keys(SKN)[rnd(0,5)];
+ if(VSK.includes(T)){const g=vGen(d),x=g.subs[rnd(0,g.subs.length-1)],hs=[...g.subs].sort((a,b)=>a.i-b.i).map(y=>y.name+':'+y.h).join(', ');
+  if(T==='vm'){const w=rnd(0,1);return{k:T,q:`Red ${g.ns} con VLSM para ${hs}. ¿${w?'Qué prefijo recibe':'Cuál es la dirección de red de'} «${x.name}»?`,a:w?'/'+x.p:L2(x.net),ok:w?(u=>pN(u)===x.p):(u=>eqIP(u,fromI(x.net))),h:w?`2<sup>n</sup> − 2 ≥ ${x.h}; prefijo = 32 − n.`:'Ordena de mayor a menor y asigna el bloque libre que mejor encaje.',ex:`${x.name}: ${L2(x.net)}/${x.p} (${x.size-2} hosts)`}}
+  const fr=g.free.reduce((a,f)=>a+f.z,0);return{k:T,q:`Red ${g.ns} con VLSM para ${hs}. ¿Cuántas direcciones quedan libres al terminar el reparto?`,a:''+fr,ok:u=>pN(u)===fr,h:'A la red inicial réstale las direcciones que ocupa cada red.',ex:`Libres: ${frTxt(g.free)}`}}
+ if(SUP.includes(T)){const e=supGen(d,T!=='sj'),nn=e.nets.map(x=>L2(x)+'/'+e.p).join(' y ');
+  if(T==='sj')return{k:T,q:`¿Se pueden unir en una sola red ${nn}?`,a:e.ok?'Sí':'No',ok:u=>/^(s|n)/i.test(u.trim())&&/^s/i.test(u.trim())===!!e.ok,h:'Comprueba: ¿son consecutivas? ¿Su número es potencia de 2 y la primera empieza al comienzo del bloque?',ex:e.ok?`Sí: ${e.c} redes consecutivas que caben en un /${e.pn}.`:e.why};
+  const M=ipS(fromI(e.mask));
+  if(T==='sm')return{k:T,q:`Máscara (decimal) de la red que resulta al unir ${nn}`,a:M,ok:u=>eqIP(u,fromI(e.mask)),h:`Prefijo = ${e.p} − ${e.k}.`,ex:`/${e.pn} = ${M}`};
+  if(T==='sh')return{k:T,q:`¿Cuántos hosts útiles tiene la red que resulta al unir ${nn}?`,a:''+e.hosts,ok:u=>pN(u)===e.hosts,h:`2<sup>${32-e.pn}</sup> − 2.`,ex:`/${e.pn}: 2<sup>${32-e.pn}</sup> − 2 = ${e.hosts}`};
+  const f=rnd(0,1),x=f?e.net:e.bc;return{k:T,q:`${f?'Dirección de red':'Dirección de broadcast'} de la red que resulta al unir ${nn}`,a:L2(x),ok:u=>eqIP(u,fromI(x)),h:f?'La de la red más pequeña (la primera).':'La de la red más grande (la última).',ex:`${f?'Red':'Broadcast'} = ${L2(x)}`}}
+ const p=d===1?rnd(24,28):d===2?rnd(20,30):rnd(10,30),n=32-p,mi=(0xFFFFFFFF<<n)>>>0;
+ const c=((192<<24)|(168<<16)|rnd(0,65535))>>>0;
+ const base=d===3?[c,((10<<24)|rnd(0,16777215))>>>0,((172<<24)|((16+rnd(0,15))<<16)|rnd(0,65535))>>>0][rnd(0,2)]:c;
+ const net=(base&mi)>>>0,bc=(net|(~mi>>>0))>>>0,ip=ipS(fromI(base)),M=ipS(fromI(mi)),N=ipS(fromI(net)),B=ipS(fromI(bc));
+ if(T==='bin'){const v=rnd(1,d===1?63:255);return rnd(0,1)?{k:T,q:`Pasa a decimal: <code>${b8(v)}</code>`,a:''+v,ok:u=>pN(u)===v,h:'Suma los pesos 128, 64, 32, 16, 8, 4, 2, 1 de los bits a 1.',ex:`${b8(v)} = ${v}`}:{k:T,q:`Pasa a binario (8 bits): <code>${v}</code>`,a:b8(v),ok:u=>/^[01]{1,8}$/.test(u.trim())&&parseInt(u,2)===v,h:'Resta los pesos 128, 64, 32… y pon 1 donde quepan.',ex:`${v} = ${b8(v)}`}}
+ if(T==='n'){if(rnd(0,1))return{k:T,q:`¿Cuántos hosts útiles tiene una red /${p}?`,a:''+(2**n-2),ok:u=>pN(u)===2**n-2,h:`Quedan ${n} bits de host: 2<sup>${n}</sup> − 2.`,ex:`2<sup>${n}</sup> − 2 = ${2**n-2}`};
+  const nn=rnd(3,d===1?6:d===2?10:16),h=rnd(2**(nn-1)-1,2**nn-2);return{k:T,q:`¿Cuántos bits de host (n) necesitas para ${h} equipos?`,a:''+nn,ok:u=>pN(u)===nn,h:'Busca el menor n con 2<sup>n</sup> − 2 ≥ equipos.',ex:`2<sup>${nn}</sup> − 2 = ${2**nn-2} ≥ ${h}; con ${nn-1} solo ${2**(nn-1)-2}.`}}
+ if(T==='mask')return{k:T,q:`Máscara en decimal de /${p}`,a:M,ok:u=>eqIP(u,fromI(mi)),h:`${p} unos seguidos de ${n} ceros.`,ex:`${bin(fromI(mi))} = ${M}`};
+ if(T==='net')return{k:T,q:`Dirección de red de <b>${ip}/${p}</b>`,a:N,ok:u=>eqIP(u,fromI(net)),h:`Máscara ${M}: pon a 0 los ${n} bits de host.`,ex:`IP AND ${M} = ${N}`};
+ if(T==='bc')return{k:T,q:`Dirección de broadcast de <b>${ip}/${p}</b>`,a:B,ok:u=>eqIP(u,fromI(bc)),h:`Calcula la red y pon a 1 los últimos ${n} bits (red + ${2**n-1}).`,ex:`Red ${N} + ${2**n-1} = ${B}`};
+ const f=rnd(0,1),x=ipS(fromI(f?net+1:bc-1));return{k:'range',q:`${f?'Primer':'Último'} host utilizable de <b>${ip}/${p}</b>`,a:x,ok:u=>eqIP(u,fromI(f?net+1:bc-1)),h:f?'Red + 1.':'Broadcast − 1.',ex:`Red ${N}, broadcast ${B} → ${x}`}
+}
+function weak(sec){return (sec==='sup'?SUP:sec==='vlsm'?VSK:Object.keys(SKN)).map(k=>{const s=D.sk[k]||{perfect:0,help:0,rev:0},t=s.perfect+s.help+s.rev;return[k,t?s.perfect/t:.5]}).sort((x,y)=>x[1]-y[1]).slice(0,2).map(x=>x[0])}
+function qstart(m,sec){QS={m,sec,t0:Date.now(),d:m==='e'?2:((sec==='sup'?D.lv2:sec==='vlsm'?D.lv3:D.level)||2),i:0,ds:[],log:[],sk:m==='w'?weak(sec):(sec==='sup'?SUP:sec==='vlsm'?VSK:null),hint:0};clearInterval(TM);if(m==='e')TM=setInterval(()=>{const e=document.getElementById('qt');if(!e)return;const t=Math.floor((Date.now()-QS.t0)/1000);e.textContent='⏱️ '+Math.floor(t/60)+':'+String(t%60).padStart(2,'0')},1000);qnext()}
+function qnext(){QS.cur=qgen(QS.d,QS.sk?QS.sk[rnd(0,QS.sk.length-1)]:null);QS.hint=0;qshow()}
+function qshow(fb){
+ const c=QS.cur,m=QS.m,$=id=>document.getElementById(id);
+ let h=`<section class="card"><h2>Pregunta ${QS.i+1}${m==='e'?' de 10':''} · ${SKN[c.k]} · nivel ${QS.d}${m==='e'?' <span id="qt" class="leg"></span>':''}</h2><p>${c.q}</p>`;
+ if(!fb)h+=`<div class="row"><label>Tu respuesta<input id="qa" autocomplete="off"></label></div><button id="qc">Comprobar</button>${m!=='e'?' <button class="sec" id="qh">💡 Pedir pista</button> <button class="sec" id="qe">Terminar</button>':''}${QS.hint?`<ul class="hints"><li><b>Pista:</b> ${c.h}</li></ul>`:''}`;
+ else h+=`<div class="sol"><b>${fb.ok?'✅ Correcto':'❌ Incorrecto'}</b>${fb.ok?'':` · correcto: <code>${c.a}</code>`}<br>${c.ex}</div><button id="qn">${m==='e'&&QS.i+1>=10?'Ver resultado':'Siguiente'}</button>`;
+ document.getElementById('app').innerHTML=h+'</section>';
+ if($('qa')){const go=()=>{const u=$('qa').value;if(!u.trim())return;const ok=!!c.ok(u);rec(c.k,ok?(QS.hint?'help':'perfect'):'rev');QS.log.push({k:c.k,ok});QS.ds.push(QS.d);if(m==='e')QS.d=Math.max(1,Math.min(3,QS.d+(ok?1:-1)));qshow({ok})};$('qc').onclick=go;$('qa').onkeydown=e=>{if(e.key==='Enter')go()};$('qa').focus({preventScroll:true});if($('qh'))$('qh').onclick=()=>{const v=$('qa').value;QS.hint=1;qshow();$('qa').value=v};if($('qe'))$('qe').onclick=qend}
+ if($('qn'))$('qn').onclick=()=>{QS.i++;if(m==='e'&&QS.i>=10)qend();else qnext()};
+}
+function qend(){clearInterval(TM);
+ const m=QS.m,L=QS.log,ok=L.filter(x=>x.ok).length,n=L.length;
+ let h=`<section class="card"><h2>🏁 Resultado: ${ok} de ${n}</h2>`;
+ if(m==='e'&&n){const a=QS.ds.slice(-4);const lv=Math.max(1,Math.min(3,Math.round(a.reduce((x,y)=>x+y,0)/a.length)));if(QS.sec==='sup')D.lv2=lv;else if(QS.sec==='vlsm')D.lv3=lv;else D.level=lv;h+=`<p>Nivel recomendado: <b>${LV[lv]}</b></p>`}
+ if(n){const nota=m==='e'?10*L.reduce((a,x,i)=>a+(x.ok?QS.ds[i]:0),0)/QS.ds.reduce((a,b)=>a+b,0):10*ok/n,s=Math.round((Date.now()-QS.t0)/1000);if(m==='e')h+=`<p>Nota: <b>${nota.toFixed(1)} / 10</b> · Tiempo: ${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}</p>`;hist(m==='e'?'Examen':'Práctica',+nota.toFixed(1))}
+ h+='<div id="cres"><ul>'+Object.keys(SKN).filter(k=>L.some(x=>x.k===k)).map(k=>{const t=L.filter(x=>x.k===k);return `<li class="${t.every(x=>x.ok)?'cok':'cbad'}">${SKN[k]}: ${t.filter(x=>x.ok).length}/${t.length}</li>`}).join('')+'</ul></div><button id="qr">Repetir</button></section>';
+ document.getElementById('app').innerHTML=h;document.getElementById('qr').onclick=()=>qstart(m,QS.sec);
+}
+const sz=p=>2**(32-p),ss=(x,q)=>strip(fromI(x),q),L2=x=>ipS(fromI(x));
+function chk(nets,p){const s=sz(p),c=nets.length;
+ if(nets.some((x,i)=>i&&x-nets[i-1]!==s))return{ok:0,t:'No son consecutivas: hay un hueco entre ellas, así que la máscara que las englobe incluiría redes que no están en la lista (condición 1).'};
+ if(c&(c-1))return{ok:0,t:`Son ${c} redes y ${c} no es potencia de 2: al quitar k bits solo se fusionan 2<sup>k</sup> redes (2, 4, 8…), así que sobrarían redes (condición 2).`};
+ if(nets[0]%(c*s)!==0)return{ok:0,t:`La primera red no está al comienzo de un bloque de ${c} redes: no comparten el mismo identificador de red al quitar ${Math.log2(c)} bit(s), y el bloque englobaría también redes que no están en la lista (condición 2).`};
+ return{ok:1}}
+function supGen(L,okOnly){
+ const p=L===1?[24,24,25,26][rnd(0,3)]:L===2?rnd(22,26):rnd(18,26),k=L===1?1:rnd(1,L===2?3:4),c=2**k,s=sz(p);
+ const [b0,R]=L===1?[0xC0A80000,65536]:L===2?[[0xC0A80000,65536],[0xAC100000,2**20]][rnd(0,1)]:[[0x0A000000,2**24],[0xAC100000,2**20]][rnd(0,1)],blk=c*s,st=b0+rnd(0,R/blk-1)*blk;
+ let nets=[...Array(c)].map((_,i)=>st+i*s);
+ if(L>1&&!okOnly&&rnd(0,1)){const r=rnd(0,2);nets=r===0?nets.map(x=>x+s):r===1?[st,st+s,st+2*s]:nets.map((x,i)=>i?x+s:x)}
+ const q=chk(nets,p),cc=nets.length,kk=Math.ceil(Math.log2(cc)),e={T:'sup',L,p,nets,c:cc,ok:q.ok,why:q.t,kk};
+ if(q.ok){e.k=kk;e.pn=p-kk;e.net=nets[0];e.bc=nets[cc-1]+s-1;e.mask=(0xFFFFFFFF<<(32-e.pn))>>>0;e.hosts=2**(32-e.pn)-2}
+ return e}
+const SEEN=new Set();
+function uniq(g,sg){let e;for(let i=0;i<30;i++){e=g();const s=sg(e);if(!SEEN.has(s)){SEEN.add(s);break}}if(SEEN.size>200)SEEN.clear();return e}
+function newSup(L){E=uniq(()=>supGen(L),e=>e.nets.join()+e.p);ST=E.ok?supSteps:[supSteps[0]];S={i:0,tries:ST.map(()=>0),hints:ST.map(()=>[]),res:[],vals:ST.map(()=>({})),msg:''}}
+const supEnun=()=>`<div class="enun">Quieres unir estas redes en una sola: <b>${E.nets.map(x=>L2(x)+'/'+E.p).join(', ')}</b>. Empieza comprobando si se puede.</div>`;
+const supSteps=[
+{k:'sj',t:'¿Se pueden unir?',th:()=>'Condición 1: deben ser consecutivas. Condición 2: la máscara resultante debe englobar solo a esas redes (su número es 2<sup>k</sup> y la primera empieza al comienzo de un bloque de ese tamaño).',
+ f:[{id:'j',l:'¿Se pueden unir?',ph:'sí o no'}],
+ ok:v=>/^(s|n)/i.test(v.j.trim())&&/^s/i.test(v.j.trim())===!!E.ok,
+ hs:[()=>'Comprueba las dos condiciones: ¿son consecutivas? ¿Se pueden agrupar en un bloque de 2, 4, 8… redes sin que sobre ninguna?',
+  ()=>`Hay ${E.c} redes: ¿es potencia de 2? Y la primera, ${L2(E.nets[0])}, ¿está al comienzo de un bloque de ${E.c} redes /${E.p}?`,
+  ()=>`Quita ${E.kk} bit(s) a la máscara y compara los bits de red de la primera y la última:${ss(E.nets[0],E.p-E.kk)}${ss(E.nets[E.c-1],E.p-E.kk)}`],
+ ans:()=>E.ok?'Sí':'No',
+ ex:()=>`${ss(E.nets[0],E.p-E.kk)}${ss(E.nets[E.c-1],E.p-E.kk)}${E.ok?`Son ${E.c} redes consecutivas que comparten los primeros ${E.pn} bits: se pueden unir en un /${E.pn}.`:E.why}`},
+{k:'sm',t:'Bits que pasan de red a host (k)',th:()=>`Se fusionan ${E.c} redes. Fusionar 2<sup>k</sup> redes significa que k bits de red pasan a ser de host.`,
+ f:[{id:'k',l:'k',ph:'ej. 2'}],ok:v=>pN(v.k)===E.k,
+ hs:[()=>'El número de redes que se fusionan es 2<sup>k</sup>.',()=>`¿A qué potencia hay que elevar 2 para obtener ${E.c}?`,()=>`El resultado está entre ${E.k-1} y ${E.k+1}.`],
+ ans:()=>'k = '+E.k,ex:()=>`2<sup>${E.k}</sup> = ${E.c} redes.`},
+{k:'sm',t:'Calcular la nueva máscara',th:()=>`Nuevo prefijo = prefijo original (/${E.p}) − k.`,
+ f:[{id:'p',l:'Prefijo',ph:'/23'},{id:'m',l:'Máscara en decimal',ph:'255.255.254.0'}],
+ ok:v=>pN(v.p)===E.pn&&eqIP(v.m,fromI(E.mask)),
+ hs:[()=>'Quita k bits a la máscara: pasan de red a host.',()=>`Prefijo = ${E.p} − ${E.k}. Los últimos ${32-E.pn} bits son de host.`,()=>`En binario es ${bin(fromI(E.mask))}. Pasa el octeto que cambia a decimal.`],
+ ans:()=>`/${E.pn} = ${L2(E.mask)}`,ex:()=>`${ss(E.mask,E.pn)}${bin(fromI(E.mask))} = ${L2(E.mask)} = /${E.pn}`},
+{k:'sn',t:'Calcular la dirección de red',th:()=>'Tiene todos los bits de host a 0. Coincide con la de la red más pequeña de las que se fusionan.',
+ f:[{id:'r',l:'Dirección de red',ph:'192.168.10.0'}],ok:v=>eqIP(v.r,fromI(E.net)),
+ hs:[()=>'La dirección de red del supernet es la de la red más pequeña (la primera) de las fusionadas.',()=>`Mira la primera de la lista, ${L2(E.nets[0])}, con prefijo /${E.pn}: sus bits de host deben estar a 0.`,()=>`En binario: ${bin(fromI(E.net))}. Con /${E.pn}, los últimos ${32-E.pn} bits van a 0.`],
+ ans:()=>L2(E.net),ex:()=>`${ss(E.net,E.pn)}${LEG}= ${L2(E.net)}`},
+{k:'sn',t:'Calcular la dirección de broadcast',th:()=>'Tiene todos los bits de host a 1. Coincide con el broadcast de la red más grande (la última) de las que se fusionan.',
+ f:[{id:'b',l:'Broadcast',ph:'192.168.11.255'}],ok:v=>eqIP(v.b,fromI(E.bc)),
+ hs:[()=>'El broadcast del supernet es el de la última red que se fusiona: todos los bits de host a 1.',()=>`Calcula el broadcast de ${L2(E.nets[E.c-1])}/${E.p}.`,()=>`Atajo: red + ${2**(32-E.pn)-1} = ${L2(E.net)} + ${2**(32-E.pn)-1}.`],
+ ans:()=>L2(E.bc),ex:()=>`${ss(E.bc,E.pn)}${LEG}= ${L2(E.bc)}`},
+{k:'sh',t:'Hosts disponibles',th:()=>`Hosts = 2<sup>bits de host</sup> − 2, con ${32-E.pn} bits de host.`,
+ f:[{id:'h',l:'Hosts útiles',ph:'510'}],ok:v=>pN(v.h)===E.hosts,
+ hs:[()=>'Hosts = 2<sup>bits de host</sup> − 2.',()=>`Bits de host = 32 − ${E.pn} = ${32-E.pn}.`,()=>`2<sup>${32-E.pn}</sup> = ${2**(32-E.pn)}; réstale las direcciones de red y de broadcast.`],
+ ans:()=>''+E.hosts,ex:()=>`2<sup>${32-E.pn}</sup> − 2 = ${E.hosts} hosts.`}];
+let VR,LK='',LK2='';
+const PAL=['#7ccf4f','#5aa9f0','#ffb84d','#ff7b72','#c4a7ff','#5fd6c4','#ff9ed0','#c3e05a'],lg=z=>32-Math.log2(z);
+function vparse(ns,ls){
+ const m=ns.trim().match(/^(\d+\.\d+\.\d+\.\d+)(?:\/(\d+))?$/),ip=m&&pIP(m[1]);
+ if(!ip)return{err:'Escribe la red como 192.168.10.0/24 (el prefijo es opcional).'};
+ const p=m[2]?+m[2]:(ip[0]<128?8:ip[0]<192?16:24);
+ if(p<8||p>30)return{err:'El prefijo debe estar entre 8 y 30.'};
+ const it=ls.split(/[,;\n]+/).map(s=>s.trim()).filter(Boolean).map((s,i)=>{const q=s.match(/^(?:(.+?)\s*[:=]\s*)?(\d+)$/);return q&&+q[2]>=1&&+q[2]<=1073741822?{name:q[1]||'Red '+(i+1),h:+q[2],i}:null});
+ if(!it.length||it.some(x=>!x))return{err:'Escribe los equipos de cada red separados por comas, por ejemplo: Ventas:50, Admin:30, Informática:30, Dirección:12.'};
+ const base=(toI(ip)&((0xFFFFFFFF<<(32-p))>>>0))>>>0,total=sz(p);
+ it.forEach(x=>{x.n=2;while(2**x.n-2<x.h)x.n++;x.size=2**x.n;x.p=32-x.n});
+ const order=[...it].sort((a,b)=>b.size-a.size);let free=[{s:base,z:total}];const steps=[],snaps=[];
+ for(const x of order){
+  const c=free.filter(f=>f.z>=x.size).sort((a,b)=>a.z-b.z||a.s-b.s)[0];
+  if(!c)return{err:`No cabe «${x.name}» (${x.h} equipos): no queda ningún bloque libre de ${x.size} direcciones.`};
+  free=free.filter(f=>f!==c);const q=c.z/x.size;
+  if(q<=1024){for(let i=1;i<q;i++)free.push({s:c.s+i*x.size,z:x.size})}else{let cur=c.z;while(cur>x.size){cur/=2;free.push({s:c.s+cur,z:cur})}}
+  x.net=c.s;x.bc=c.s+x.size-1;x.first=x.net+1;x.last=x.bc-1;x.mask=(0xFFFFFFFF<<x.n)>>>0;
+  steps.push({x,b:{s:c.s,z:c.z},k:Math.log2(q)});
+  snaps.push({asg:order.filter(y=>y.net!==undefined).map(y=>({s:y.net,z:y.size,name:y.name,i:y.i})),free:free.map(f=>({...f})).sort((a,b)=>a.s-b.s)});
+ }
+ return{base,p,total,subs:order,steps,snaps,free:free.sort((a,b)=>a.s-b.s)};
+}
+function vtable(r){return '<div style="overflow-x:auto"><table class="vt"><tr><th>Red</th><th>Equipos</th><th>Máscara</th><th>Dirección de red</th><th>Rango de hosts</th><th>Broadcast</th></tr>'+[...r.subs].sort((a,b)=>a.i-b.i).map(x=>`<tr><td>${x.name}</td><td>${x.h}</td><td>/${x.p}<br>${L2(x.mask)}</td><td>${L2(x.net)}</td><td>${L2(x.first)} – ${L2(x.last)}<br>(${x.size-2} útiles)</td><td>${L2(x.bc)}</td></tr>`).join('')+'</table></div>'}
+function vform(m){
+ document.getElementById('app').innerHTML=`<section class="card"><h2>${m==='v'?'Dividir una red (VLSM)':'Corregir un reparto VLSM'}</h2><p class="theory">${m==='v'?'Dame la red y los equipos de cada subred. Aplico el algoritmo: la mayor primero, y cada una en el bloque libre que mejor encaje.':'Escribe el enunciado, rellena tus respuestas y te las corrijo.'}</p><div class="row">${m==='u'?'<label>Red inicial (IP)<input id="v-n" placeholder="192.168.10.0"></label><label>Máscara (decimal o /prefijo)<input id="v-m" placeholder="255.255.255.0"></label>':'<label>Red (IP/prefijo)<input id="v-n" placeholder="192.168.10.0/24"></label>'}<label>Equipos por red (con comas)<input id="v-l" placeholder="Ventas:50, Admin:30, Informática:30, Dirección:12"></label></div><button id="vb">${m==='v'?'Dividir red':'Preparar corrección'}</button><div id="vres"></div></section>`;
+ document.getElementById('vb').onclick=m==='v'?vcalc:vprep;
+}
+function vcalc(){
+ const r=vparse(document.getElementById('v-n').value,document.getElementById('v-l').value),o=document.getElementById('vres');
+ if(r.err){o.innerHTML=`<p class="msg bad">${r.err}</p>`;return}
+ VR=r;
+ o.innerHTML='<h2>Pasos del algoritmo</h2><p class="leg">El algoritmo asigna de mayor a menor, por eso los pasos siguen ese orden. La tabla final respeta el orden en que escribiste las redes.</p>'+r.steps.map((st,i)=>{const x=st.x,b=st.b;return `<div class="sol"><b>Paso ${i+1}. ${x.name} (${x.h} equipos) · tu red n.º ${x.i+1}</b><br>Particionar <code>${L2(b.s)}/${lg(b.z)}</code> en redes de ${x.h} hosts: 2<sup>${x.n}</sup> − 2 = ${x.size-2} hosts/subred (${x.n} bits de host) · 2<sup>${st.k}</sup> = ${2**st.k} subredes · /${lg(b.z)} + ${st.k} → <b>/${x.p}</b>.<br>Se asigna <code>${L2(x.net)}/${x.p}</code> a ${x.name}. Libres: ${r.snaps[i].free.length?frTxt(r.snaps[i].free):'ninguna'}.${vbar(r.snaps[i])}</div>`}).join('')+'<h2>Resultado final</h2>'+vbar(r.snaps[r.snaps.length-1])+vtable(r)+vsum(r)+'<div class="row"><label>Red nueva de (equipos)<input id="v-x" inputmode="numeric" placeholder="20"></label></div><button id="vx">¿Dónde la pongo?</button><div id="vxr"></div>';
+ document.getElementById('vx').onclick=()=>{const h=pN(document.getElementById('v-x').value),w=document.getElementById('vxr');if(!h||h<1){w.innerHTML='<p class="msg bad">Escribe el número de equipos.</p>';return}let n=2;while(2**n-2<h)n++;const c=VR.free.filter(f=>f.z>=2**n).sort((a,b)=>a.z-b.z||a.s-b.s)[0];w.innerHTML=c?`<div class="sol">Para ${h} equipos necesitas /${32-n} (${2**n-2} hosts). Usa el bloque libre más ajustado: <b>${L2(c.s)}/${lg(c.z)}</b> (${c.z-2} hosts); así sobran solo ${c.z-2-h}.</div>`:'<div class="sol"><b>Imposible:</b> ningún bloque libre es lo bastante grande.</div>'};
+}
+const VN=['Ventas','Administración','Informática','Dirección','Soporte','Contabilidad','Almacén','Invitados'];
+function vGen(L){for(let t=0;t<50;t++){const np=L===1?24:L===2?rnd(23,24):rnd(21,23),b=L===3||(L===2&&rnd(0,1))?(rnd(0,1)?`10.${rnd(0,255)}.0.0`:`172.${rnd(16,31)}.0.0`):`192.168.${rnd(0,255)}.0`,cnt=L===1?rnd(3,4):L===2?rnd(4,5):rnd(5,6),mx=L===1?60:L===2?100:500,ls=[...VN].sort(()=>Math.random()-.5).slice(0,cnt).map(x=>x+':'+rnd(4,mx)).join(','),r=vparse(`${b}/${np}`,ls);if(!r.err&&r.free.length)return{...r,ns:`${L2(r.base)}/${r.p}`}}return vGen(1)}
+function vStep(r,st,i){const x=st.x,b=st.b;return{k:'vm',t:`Asignar ${x.name} (${x.h} equipos)`,
+ th:()=>(i?'Elige, entre los bloques libres, el más pequeño en el que quepa.':'Es la red mayor: se parte la red inicial en bloques de su tamaño.')+' Calcula el prefijo y la dirección de red que le corresponde.',
+ f:[{id:'p',l:'Prefijo',ph:'/26'},{id:'r',l:'Dirección de red',ph:'192.168.10.0'}],
+ ok:v=>pN(v.p)===x.p&&eqIP(v.r,fromI(x.net)),
+ hs:[()=>`Busca n con 2<sup>n</sup> − 2 ≥ ${x.h}; el prefijo es 32 − n.`,()=>`Necesitas un bloque de ${x.size} direcciones (/${x.p}). ${i?'Bloques libres: '+frTxt(r.snaps[i-1].free)+'.':'Parte '+L2(r.base)+'/'+r.p+'.'}`,()=>`El bloque que mejor encaja es ${L2(b.s)}/${lg(b.z)}; la red de ${x.name} es su primera subred.`],
+ ans:()=>`${L2(x.net)}/${x.p}`,
+ ex:()=>`Particionar <code>${L2(b.s)}/${lg(b.z)}</code> en redes de ${x.h} hosts: 2<sup>${x.n}</sup> − 2 = ${x.size-2} hosts (${x.n} bits de host) · 2<sup>${st.k}</sup> = ${2**st.k} subredes · /${lg(b.z)} + ${st.k} → /${x.p}.${vbar(r.snaps[i])}`}}
+function newVl(L){const r=uniq(()=>vGen(L),g=>g.ns+g.subs.map(x=>x.name+x.h).join());E={T:'vlsm',L,r};ST=[...r.steps.map((st,i)=>vStep(r,st,i)),vFin(r)];S={i:0,tries:ST.map(()=>0),hints:ST.map(()=>[]),res:[],vals:ST.map(()=>({})),msg:''}}
+const vlEnun=()=>`<div class="enun">Reparte <b>${E.r.ns}</b> con VLSM para: <b>${[...E.r.subs].sort((a,b)=>a.i-b.i).map(x=>x.name+' ('+x.h+')').join(', ')}</b> equipos.</div>`;
+function menuVlsm(){
+ const L=[[1,'🌱','Fácil','3 redes en una /24. Aplicas el algoritmo paso a paso.','g'],[2,'🔧','Medio','4 o 5 redes en una /24.','y'],[3,'🔥','Difícil','5 o 6 redes en redes 10.x, 172.16.x o 192.168.x más grandes (/21 a /23).','r'],['v','🧩','Dividir red','Dame una red y los equipos de cada subred y la divido paso a paso.','c'],['u','🛠️','Corregir VLSM','Escribe tu reparto y te lo corrijo subred por subred.','c'],['ve','📝','Examen','10 preguntas adaptativas de VLSM con nota y nivel.','c'],['va','🎲','Aleatorio','Preguntas de VLSM mezcladas.','c'],['s','📊','Mi progreso','Tu evolución en subnetting, supernetting y VLSM.','c']];
+ document.getElementById('app').innerHTML='<h2 class="pick">VLSM: elige un nivel</h2><div class="lv">'+L.map(l=>`<button class="lvc ${l[4]}" data-l="${l[0]}"><span class="em">${l[1]}</span><b>${l[2]}</b><span>${l[3]}</span></button>`).join('')+'</div>'+(D.lv3?`<p>Tu nivel recomendado: <b>${LV[D.lv3]}</b></p>`:'');
+ document.querySelectorAll('.lvc').forEach(b=>b.onclick=()=>{const l=b.dataset.l;if(/^[123]$/.test(l)){CM=false;newVl(+l);render();return}MODE=l;CM=true;render()});
+}
+const mP=s=>{s=(s||'').trim();if(/^\/?\d{1,2}$/.test(s))return +s.replace('/','');const a=pIP(s);if(!a)return null;const z=(~toI(a))>>>0;return (z&(z+1))?null:32-Math.log2(z+1)};
+function scorr(){
+ document.getElementById('app').innerHTML=`<section class="card"><h2>Corrector de supernetting</h2><p class="theory">Escribe las redes (todas con el mismo prefijo) y tus respuestas. Se quitan todos los bits de red necesarios hasta que las redes comparten el mismo identificador. Deja en blanco lo que no hayas hecho.</p><div class="row"><label>Redes (IP/prefijo, separadas por comas)<input id="s-n" placeholder="192.168.11.0/24, 192.168.12.0/24"></label></div><div class="row">${[['k','Bits de red que quitas (k)'],['p','Prefijo'],['m','Máscara'],['r','Dirección de red'],['b','Broadcast'],['c','Nº de redes que engloba']].map(f=>`<label>${f[1]}<input id="s-${f[0]}" autocomplete="off"></label>`).join('')}</div><button id="sk2">Corregir</button><div id="cres"></div></section>`;
+ document.getElementById('sk2').onclick=scheck;
+}
+function scheck(){
+ const g=id=>document.getElementById('s-'+id).value.trim(),o=document.getElementById('cres');
+ const ns=g('n').split(/[,;\s]+/).filter(Boolean).map(x=>x.match(/^(\d+\.\d+\.\d+\.\d+)\/(\d+)$/));
+ if(ns.length<2||ns.some(m=>!m||!pIP(m[1]))||new Set(ns.map(m=>m[2])).size!==1||+ns[0][2]<2||+ns[0][2]>30){o.innerHTML='<p class="msg bad">Escribe al menos 2 redes con formato IP/prefijo y el mismo prefijo, por ejemplo 192.168.11.0/24, 192.168.12.0/24.</p>';return}
+ const p=+ns[0][2],s=sz(p),nets=[...new Set(ns.map(m=>{const x=toI(pIP(m[1]));return x-x%s}))].sort((a,b)=>a-b);
+ if(nets.length<2){o.innerHTML='<p class="msg bad">Las redes tienen que ser distintas.</p>';return}
+ const pn=Math.clz32(nets.reduce((a,x)=>(a|(x^nets[0]))>>>0,0)),k=p-pn,size=2**(32-pn),net=nets[0]-nets[0]%size,bc=net+size-1,mk=pn?(0xFFFFFFFF<<(32-pn))>>>0:0,nr=2**k;
+ const KEY=g('n')+['k','p','m','r','b','c'].map(g).join('|'),R1=KEY!==LK2;LK2=KEY;
+ const rows=[],cnt=[0,0];
+ const add=(l,u,ok,cor,why,sk)=>{if(u==='')return;cnt[ok?0:1]++;if(R1)rec(sk,ok?'perfect':'rev');rows.push(`<li class="${ok?'cok':'cbad'}"><b>${ok?'✅':'❌'} ${l}:</b> <code>${u}</code>${ok?'':` · correcto: <code>${cor}</code><br><span class="leg">${why}</span>`}</li>`)};
+ const uk=pN(g('k')),up=pN(g('p')),um=pIP(g('m'));
+ add('Bits que quitas (k)',g('k'),uk===k,k,`Se quitan bits de red hasta que todas las redes comparten el mismo identificador: comparten los primeros ${pn} bits, así que k = ${p} − ${pn} = ${k}.`,'sm');
+ add('Prefijo',g('p'),up===pn,'/'+pn,uk!==null&&uk!==k&&up===p-uk?'Es coherente con tu k, pero arrastras el error del paso anterior.':`Prefijo = ${p} − ${k} = ${pn}.`,'sm');
+ add('Máscara',g('m'),!!um&&toI(um)===mk,L2(mk),um&&up!==null&&up>=1&&up<=32&&toI(um)===(0xFFFFFFFF<<(32-up))>>>0&&up!==pn?'Coincide con tu prefijo, así que el fallo viene de antes.':`${pn} unos y ${32-pn} ceros: ${bin(fromI(mk))}.`,'sm');
+ add('Dirección de red',g('r'),eqIP(g('r'),fromI(net)),L2(net),`Es la dirección de red de la primera red con los últimos ${32-pn} bits de host a 0.`,'sn');
+ add('Broadcast',g('b'),eqIP(g('b'),fromI(bc)),L2(bc),`Red + ${size-1}: todos los bits de host a 1.`,'sn');
+ add('Nº de redes que engloba',g('c'),pN(g('c'))===nr,nr,`2<sup>k</sup> = 2<sup>${k}</sup> = ${nr} redes /${p}.`,'sm');
+ const ex=nr<=64?[...Array(nr)].map((_,i)=>net+i*s).filter(x=>!nets.includes(x)):[];
+ const tot=cnt[0]+cnt[1];
+ o.innerHTML=(tot?`<h2>Resultado: ${cnt[0]} de ${tot} correctas</h2><ul>${rows.join('')}</ul>`:'<p class="msg bad">No has rellenado ninguna respuesta.</p>')+`<div class="sol"><b>Solución completa</b>${ss(nets[0],pn)}${ss(nets[nets.length-1],pn)}${LEG}Quitas <b>k = ${k}</b> bits (de /${p} a /${pn}): la supernet es <b>${L2(net)}/${pn}</b>, máscara ${L2(mk)}, broadcast ${L2(bc)}.<br>Engloba ${nr} redes /${p}: las ${nets.length} que has dado${nr>nets.length?` y ${nr-nets.length} más${ex.length?` (${ex.map(x=>L2(x)).join(', ')})`:''}, que quedan incluidas en la supernet aunque no estaban en la lista`:''}.</div>`;
+}
+function fmerge(fr){const a=[...fr].sort((x,y)=>x.s-y.s),o=[];a.forEach(f=>{const l=o[o.length-1];if(l&&l.s+l.z===f.s)l.z+=f.z;else o.push({s:f.s,z:f.z})});return o}
+const frTxt=fr=>fmerge(fr).map(f=>`${L2(f.s)} – ${L2(f.s+f.z-1)} (${f.z} direcciones)`).join(' · ');
+function vbar(sn){
+ const all=[...sn.asg.map(a=>({s:a.s,z:a.z,l:a.name+' /'+lg(a.z),c:PAL[a.i%8]})),...fmerge(sn.free).map(f=>({s:f.s,z:f.z,l:'Libre ('+f.z+')',c:'#e4d300'}))].sort((a,b)=>a.s-b.s);
+ return '<div class="vb">'+all.map(b=>`<div title="${L2(b.s)}" style="flex:${b.z} 1 0;min-width:34px;background:${b.c}">${b.l}<br>${L2(b.s)}</div>`).join('')+'</div>';
+}
+function vsum(r){
+ const used=r.subs.reduce((a,x)=>a+x.h,0),cap=r.subs.reduce((a,x)=>a+x.size-2,0),mx=Math.max(...r.subs.map(x=>x.size)),fr=r.free.reduce((a,f)=>a+f.z,0);
+ return `<div class="sol"><b>Aprovechamiento</b><br>Equipos pedidos: ${used} · hosts reservados con VLSM: ${cap} · desperdicio: ${cap-used}.<br>Con subnetting normal (todas del mayor tamaño, /${lg(mx)}) harían falta ${r.subs.length*mx} direcciones frente a ${r.subs.reduce((a,x)=>a+x.size,0)} con VLSM.<br><b>Direcciones libres para ampliar:</b> ${r.free.length?frTxt(r.free)+(fmerge(r.free).length>1?`<br>Total libre: ${fr} direcciones.`:''):'ninguna'}</div>`;
+}
+function vFin(r){const fr=r.free.reduce((a,f)=>a+f.z,0),oc=r.subs.reduce((a,x)=>a+x.size,0);return{k:'vl',t:'Direcciones libres',th:()=>'Tras repartir todas las redes quedan direcciones libres, agrupadas en uno o varios rangos. Cuenta cuántas son en total.',f:[{id:'h',l:'Direcciones libres',ph:'112'}],ok:v=>pN(v.h)===fr,hs:[()=>'Resta a la red inicial las direcciones que ocupan las redes asignadas.',()=>`La red inicial tiene ${r.total} direcciones y las redes asignadas ocupan ${oc}.`,()=>`${r.total} − ${oc}. Rango libre: ${r.free.length?frTxt(r.free):'ninguno'}.`],ans:()=>''+fr,ex:()=>`${vbar(r.snaps[r.snaps.length-1])}${r.total} − ${oc} = ${fr} direcciones libres${r.free.length?': '+frTxt(r.free):''}.`}}
+function vprep(){
+ const o=document.getElementById('vres'),ip=pIP(document.getElementById('v-n').value),p=mP(document.getElementById('v-m').value);
+ if(!ip||p===null){o.innerHTML='<p class="msg bad">Escribe la IP de la red (ej. 192.168.10.0) y una máscara válida (255.255.255.0 o /24).</p>';return}
+ const r=vparse(ipS(ip)+'/'+p,document.getElementById('v-l').value);
+ if(r.err){o.innerHTML=`<p class="msg bad">${r.err}</p>`;return}
+ VR=r;
+ const F=[['n','n (bits de host)'],['p','Prefijo'],['m','Máscara'],['r','Red'],['b','Broadcast'],['f','Primer host'],['l','Último host']];
+ o.innerHTML=(toI(ip)!==r.base?`<p class="leg">La IP ${ipS(ip)} no es la dirección de red de /${p}: se usa ${L2(r.base)}.</p>`:'')+'<h2>Tus respuestas</h2><p class="leg">Aplica el algoritmo: asigna primero la red mayor. Vale cualquier reparto correcto: alineado, dentro de la red inicial y sin solapes.</p>'+[...r.subs].sort((a,b)=>a.i-b.i).map(x=>`<div class="sk"><b>${x.name}</b> <span class="leg">(${x.h} equipos)</span><div class="row">${F.map(f=>`<label>${f[1]}<input id="vc-${x.i}-${f[0]}" autocomplete="off"></label>`).join('')}</div></div>`).join('')+'<div class="row"><label>Direcciones libres que quedan (total)<input id="vc-fr" autocomplete="off"></label></div><button id="vk">Corregir</button><div id="vk2"></div>';
+ document.getElementById('vk').onclick=vcorr;
+}
+function vcorr(){
+ const r=VR,g=(i,k)=>document.getElementById(`vc-${i}-${k}`).value.trim();let ok=0,tot=0;
+ const L=[['n','Bits de host (n)','n'],['p','Prefijo','mask'],['m','Máscara','mask'],['r','Red','net'],['b','Broadcast','bc'],['f','Primer host','range'],['l','Último host','range']];
+ const SN={};r.subs.forEach(x=>{const a=pIP(g(x.i,'r'));SN[x.i]=a?toI(a):null});
+ const myNet=y=>SN[y.i]!==null?SN[y.i]:y.net;
+ const ovl=x=>{const s=SN[x.i];return r.subs.find(y=>y!==x&&myNet(y)<s+x.size&&s<myNet(y)+y.size)};
+ const valid=x=>{const s=SN[x.i];return s!==null&&s>=r.base&&s+x.size<=r.base+r.total&&(s-r.base)%x.size===0&&!ovl(x)};
+ const rows=[...r.subs].sort((a,b)=>a.i-b.i).map(x=>{
+  const V=valid(x),nt=V?SN[x.i]:x.net,C={b:nt+x.size-1,f:nt+1,l:nt+x.size-2},un=pN(g(x.i,'n')),up=pN(g(x.i,'p')),um=pIP(g(x.i,'m'));
+  const li=L.filter(l=>g(x.i,l[0])!=='').map(l=>{const k=l[0],u=g(x.i,k);
+   const c=k==='n'?un===x.n:k==='p'?up===x.p:k==='m'?!!um&&toI(um)===x.mask:k==='r'?V:eqIP(u,fromI(C[k]));
+   tot++;if(c)ok++;rec(l[2],c?'perfect':'rev');
+   let why='',note='';
+   if(c&&k==='r'&&SN[x.i]!==x.net)note=`Válida, aunque el algoritmo (mejor ajuste) usa ${L2(x.net)}.`;
+   if(!c){
+    if(k==='n')why=un===null?'Debe ser un número entero.':un<x.n?`Con n = ${un} solo hay 2<sup>${un}</sup> − 2 = ${2**un-2} hosts y necesitas ${x.h}.`:`Llegas, pero no es el mínimo: con n = ${x.n} hay ${x.size-2} hosts (≥ ${x.h}) y con ${x.n-1} solo ${2**(x.n-1)-2}.`;
+    else if(k==='p')why=un!==null&&un!==x.n&&up===32-un?'Es coherente con tu n, pero arrastras el error del paso anterior.':`Prefijo = 32 − n = 32 − ${x.n} = ${x.p}.`;
+    else if(k==='m')why=um&&up!==null&&up>=1&&up<=32&&toI(um)===(0xFFFFFFFF<<(32-up))>>>0&&up!==x.p?'Coincide con tu prefijo, así que el fallo viene de antes.':`${x.p} unos y ${x.n} ceros: ${bin(fromI(x.mask))}.`;
+    else if(k==='r'){const s=SN[x.i];why=s===null?'Escribe una dirección IP válida.':(s<r.base||s+x.size>r.base+r.total)?`Está fuera de la red inicial (${L2(r.base)} – ${L2(r.base+r.total-1)}).`:(s-r.base)%x.size?`Una red de ${x.size} direcciones solo puede empezar en múltiplos de ${x.size} dentro de la red inicial.`:`Se solapa con «${ovl(x).name}».`}
+    else{const o2=r.subs.find(y=>y!==x&&eqIP(u,fromI(k==='b'?y.bc:k==='f'?y.first:y.last)));
+     why=(o2?`Esa dirección es de «${o2.name}».`:{b:`Red + ${x.size-1} (${L2(nt)} + ${x.size-1}).`,f:eqIP(u,fromI(nt))?'La primera dirección es la de red y no se asigna: el primer host es red + 1.':'Primer host = red + 1.',l:eqIP(u,fromI(nt+x.size-1))?'La última dirección es la de broadcast y no se asigna: el último host es broadcast − 1.':'Último host = broadcast − 1.'}[k])+(V?'':' Se corrige respecto a la red correcta porque la tuya no es válida.')}
+   }
+   const cor=k==='n'?x.n:k==='p'?'/'+x.p:k==='m'?L2(x.mask):k==='r'?L2(x.net)+' (con el algoritmo)':L2(C[k]);
+   return `<li class="${c?'cok':'cbad'}">${c?'✅':'❌'} <b>${l[1]}:</b> <code>${u}</code>${c?(note?`<br><span class="leg">${note}</span>`:''):` · correcto: <code>${cor}</code><br><span class="leg">${why}</span>`}</li>`}).join('');
+  return `<h2>${x.name}</h2><ul>${li||'<li class="leg">Sin respuestas</li>'}</ul>`}).join('');
+ const fr=r.free.reduce((a,f)=>a+f.z,0),oc=r.subs.reduce((a,x)=>a+x.size,0),uf=document.getElementById('vc-fr').value.trim();let frow='';
+ if(uf!==''){const c=pN(uf)===fr;tot++;if(c)ok++;rec('vl',c?'perfect':'rev');frow=`<h2>Direcciones libres</h2><ul><li class="${c?'cok':'cbad'}">${c?'✅':'❌'} <b>Libres:</b> <code>${uf}</code>${c?'':` · correcto: <code>${fr}</code><br><span class="leg">Red inicial (${r.total}) − direcciones ocupadas por las redes (${oc}) = ${fr}.</span>`}</li></ul>`}
+ document.getElementById('vk').disabled=true;if(tot)hist('VLSM',+(10*ok/tot).toFixed(1));
+ document.getElementById('vk2').innerHTML=`<div id="cres"><h2>Resultado: ${ok} de ${tot} correctas</h2>${rows}${frow}</div><h2>Solución completa</h2>${vbar(r.snaps[r.snaps.length-1])}${vtable(r)}${vsum(r)}`;
+}
+function stats(){
+ const T=k=>{const s=D.sk[k]||{perfect:0,help:0,rev:0};return[s,s.perfect+s.help+s.rev]},K=Object.keys(SKN);
+ const W=K.filter(k=>T(k)[1]>=3).sort((a,b)=>T(a)[0].perfect/T(a)[1]-T(b)[0].perfect/T(b)[1]);
+ const ds=new Set(D.days);let st=0,dt=new Date();if(!ds.has(today()))dt.setDate(dt.getDate()-1);while(ds.has(dt.toISOString().slice(0,10))){st++;dt.setDate(dt.getDate()-1)}
+ const P=Object.values(D.sk).reduce((a,s)=>a+s.perfect,0);
+ const BG=[[P>=1,'🥉 Primer acierto sin ayuda'],[P>=10,'🥈 10 aciertos sin ayuda'],[P>=50,'🥇 50 aciertos sin ayuda'],[D.hist.some(x=>x.m==='Examen'&&x.s>=5),'🎓 Examen aprobado'],[st>=3,'🔥 Racha de 3 días'],[D.level===3||D.lv2===3||D.lv3===3,'🚀 Nivel Difícil']].filter(x=>x[0]).map(x=>`<span class="bd">${x[1]}</span>`).join('');
+ const SEC3=[['sub','✂️ Subnetting',K.slice(0,6),D.level,newEx,'e'],['sup','🔗 Supernetting',SUP,D.lv2,newSup,'se'],['vlsm','🧩 VLSM',VSK,D.lv3,newVl,'ve']];
+ const REC=SEC3.map((q,i)=>{const tot=q[2].reduce((a,k)=>a+T(k)[1],0),pf=q[2].reduce((a,k)=>a+T(k)[0].perfect,0)/(tot||1);let rl=q[3]||0,why;
+  if(!rl)why='Haz el Examen de esta sección para saber por dónde empezar.';
+  else if(tot>=15&&pf>=.8&&rl<3){rl++;why=`Aciertas el ${Math.round(100*pf)}% sin ayuda: puedes subir de nivel.`}
+  else if(tot>=10&&pf<.4&&rl>1){rl--;why=`Solo aciertas el ${Math.round(100*pf)}% sin ayuda: afianza con un nivel más bajo.`}
+  else why=tot>=10?`Aciertas el ${Math.round(100*pf)}% sin ayuda: tu nivel encaja.`:'Es el nivel del examen; aún hay pocos datos para ajustarlo.';
+  q[6]=rl;return `<div class="enun"><b>🧭 ${q[1]}:</b> ${rl?LV[rl]:'haz el examen'}<br><span class="leg">${why}</span><div class="row"><button id="rs${i}">${rl?'Empezar '+LV[rl]:'Hacer el examen'}</button></div></div>`}).join('');
+ const sk=K.map(k=>{const[s,t]=T(k);return t?`<div class="sk"><b>${SKN[k]}</b> <span class="leg">${Math.round(100*s.perfect/t)}% sin ayuda · ${t} respuestas</span><div class="bar"><i style="width:${100*s.perfect/t}%;background:var(--ok)"></i><i style="width:${100*s.help/t}%;background:#e0a800"></i><i style="width:${100*s.rev/t}%;background:var(--bad)"></i></div></div>`:`<div class="sk"><b>${SKN[k]}</b> <span class="leg">sin datos</span></div>`}).join('');
+ const er=Object.entries(D.err).sort((a,b)=>b[1]-a[1]).map(e=>`<li>${e[0]} (${e[1]})</li>`).join('');
+ const rep=`INFORME DE SUBNETTING, SUPERNETTING Y VLSM (${today()})\nNiveles: subnetting ${D.level?LV[D.level]:'-'} · supernetting ${D.lv2?LV[D.lv2]:'-'} · VLSM ${D.lv3?LV[D.lv3]:'-'}\nRacha: ${st} días\n`+K.map(k=>{const[s,t]=T(k);return `${SKN[k]}: ${t?Math.round(100*s.perfect/t)+'% sin ayuda ('+t+' respuestas)':'sin datos'}`}).join('\n')+(W.length?`\nPunto débil: ${SKN[W[0]]}\nPunto fuerte: ${SKN[W[W.length-1]]}`:'')+`\nPruebas: ${D.hist.length}`;
+ document.getElementById('app').innerHTML=`<section class="card"><h2>📊 Mi progreso</h2><p>Racha: <b>${st}</b> días</p>${REC}${W.length?`<p>🎯 Punto débil: <b>${SKN[W[0]]}</b> · 💪 Punto fuerte: <b>${SKN[W[W.length-1]]}</b></p>`:'<p class="leg">Responde al menos 3 preguntas por habilidad para ver tus puntos fuertes y débiles.</p>'}${sk}<div class="leg"><span style="color:var(--ok)">■</span> sin ayuda <span style="color:#e0a800">■</span> con pistas <span style="color:var(--bad)">■</span> fallo/solución</div><h2>Evolución (últimas pruebas, nota sobre 10)</h2><div class="hb">${D.hist.slice(-12).map(x=>`<i title="${x.d} ${x.m}: ${x.s}" style="height:${x.s*10}%"></i>`).join('')||'<span class="leg">Sin pruebas todavía</span>'}</div>${BG?`<h2>Insignias</h2>${BG}`:''}${er?`<h2>Errores típicos</h2><ul>${er}</ul>`:''}<div class="row"><button id="sw">🎯 Practicar punto débil</button><button class="sec" id="sr">Informe</button><button class="sec" id="se">Exportar datos</button><button class="sec" id="si">Importar datos</button><button class="sec" id="sd">Borrar datos</button></div><div id="rp"></div></section>`;
+ SEC3.forEach((q,i)=>{document.getElementById('rs'+i).onclick=()=>{SEC=q[0];if(q[6]){CM=false;q[4](q[6]);render()}else{MODE=q[5];CM=true;render()}}});
+ document.getElementById('sw').onclick=()=>{MODE='w';render()};
+ const box=(txt,ro)=>{document.getElementById('rp').innerHTML='<textarea id="rt"></textarea>'+(ro?'':'<button id="rl">Cargar datos</button>');const t=document.getElementById('rt');t.value=txt;t.readOnly=ro;if(ro){t.select();try{navigator.clipboard.writeText(txt)}catch(e){}}};
+ document.getElementById('sr').onclick=()=>box(rep,true);
+ document.getElementById('se').onclick=()=>box(JSON.stringify(D),true);
+ document.getElementById('si').onclick=()=>{box('',false);document.getElementById('rl').onclick=()=>{try{const x=JSON.parse(document.getElementById('rt').value);if(typeof x!=='object'||!x||Array.isArray(x))throw 0;D=x;fixD();save();stats()}catch(e){document.getElementById('rp').insertAdjacentHTML('beforeend','<p class="msg bad">Esos datos no son válidos. Pega el texto exportado con «Exportar datos».</p>')}}};
+ const sd=document.getElementById('sd');sd.onclick=()=>{if(sd.dataset.s){D={};fixD();save();stats()}else{sd.dataset.s=1;sd.textContent='¿Seguro? Pulsa otra vez'}};
+}
+
+function check(){
+  const i=S.i,s=ST[i],v={};
+  s.f.forEach(f=>v[f.id]=document.getElementById('in-'+f.id).value);
+  S.vals[i]=v;
+  if(s.f.some(f=>!v[f.id].trim())){S.msg='Rellena todos los campos antes de comprobar.';render();return}
+  if(s.ok(v)){S.res[i]=S.hints[i].length===0?'perfect':'help';S.msg='';}
+  else if(S.hints[i].length>=3&&S.tries[i]>=3){S.res[i]='rev';S.msg='';}
+  else{S.tries[i]++;if(S.hints[i].length<3)S.hints[i].push(s.hs[S.hints[i].length](v));S.msg=S.tries[i]>=3?'No es correcto. Última oportunidad: si fallas otra vez verás la solución.':'No es correcto. Revisa las pistas e inténtalo de nuevo.';}
+  if(S.res[i])rec(s.k,S.res[i]);
+  render();
+}
+render();
+</script>
+</body>
+</html>
